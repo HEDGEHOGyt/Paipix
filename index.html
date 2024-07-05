@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avatar Generator</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000000;
+            margin: 0;
+        }
+        canvas {
+            border: 1px solid #ccc;
+            margin-bottom: 50px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #FFFFFF;
+            color: #000000;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #EEEEEE;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="avatarCanvas" width="1250" height="1250"></canvas>
+    <button id="generateButton" onclick="generateAvatar()">Generate</button>
+    <script>
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        function generateAvatar() {
+            const canvas = document.getElementById('avatarCanvas');
+            const context = canvas.getContext('2d');
+            const pixelSize = canvas.width / 5;
+            const chosenColor = getRandomColor();
+            const backgroundColor = getRandomColor();
+
+            // Заполнение фона
+            context.fillStyle = backgroundColor;
+            context.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Генерация пикселей
+            let grid = Array.from({ length: 5 }, () => Array(5).fill(backgroundColor));
+
+            // Заполнение левой половины и середины
+            for (let row = 0; row < 5; row++) {
+                for (let col = 0; col < 3; col++) {
+                    if (Math.random() > 0.5) {
+                        grid[row][col] = chosenColor;
+                        grid[row][4 - col] = chosenColor; // симметрия
+                    }
+                }
+            }
+
+            // Рисование пикселей
+            for (let row = 0; row < 5; row++) {
+                for (let col = 0; col < 5; col++) {
+                    context.fillStyle = grid[row][col];
+                    context.fillRect(col * pixelSize, row * pixelSize, pixelSize, pixelSize);
+                }
+            }
+        }
+
+        window.onload = function() {
+            generateAvatar();
+
+            // Определение региона
+            fetch('https://ipapi.co/json/')
+                .then(response => response.json())
+                .then(data => {
+                    const generateButton = document.getElementById('generateButton');
+                    if (data.country_code === 'RU' || data.country_code === 'BY' || data.country_code === 'KZ' || data.country_code === 'UA') {
+                        generateButton.textContent = 'Генерировать';
+                    } else {
+                        generateButton.textContent = 'Generate';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error determining region:', error);
+                });
+        };
+    </script>
+</body>
+</html>
